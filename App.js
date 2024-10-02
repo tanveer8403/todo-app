@@ -1,10 +1,20 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, FlatList, Text, Switch, TouchableOpacity, StyleSheet, Modal } from 'react-native';
+import {
+  View,
+  TextInput,
+  Button,
+  FlatList,
+  Text,
+  Switch,
+  TouchableOpacity,
+  StyleSheet,
+  Modal,
+} from 'react-native';
 
 const App = () => {
   const [tasks, setTasks] = useState([]);
   const [taskTitle, setTaskTitle] = useState('');
-  const [editingTask, setEditingTask] = useState(null);
+  const [editingTaskIndex, setEditingTaskIndex] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState('');
 
@@ -33,17 +43,27 @@ const App = () => {
     setTasks(filteredTasks);
   };
 
-  // Edit Task - Save Changes
-  const saveTaskEdit = (index) => {
-    const updatedTasks = tasks.map((task, i) => {
-      if (i === editingTask) {
-        return { ...task, title: newTaskTitle };
-      }
-      return task;
-    });
-    setTasks(updatedTasks);
-    setModalVisible(false);
-    setEditingTask(null);
+  // Open modal for editing task
+  const editTask = (index) => {
+    setEditingTaskIndex(index);
+    setNewTaskTitle(tasks[index].title);
+    setModalVisible(true);
+  };
+
+  // Save edited task
+  const saveTaskEdit = () => {
+    if (newTaskTitle.trim()) {
+      const updatedTasks = tasks.map((task, i) => {
+        if (i === editingTaskIndex) {
+          return { ...task, title: newTaskTitle };
+        }
+        return task;
+      });
+      setTasks(updatedTasks);
+      setModalVisible(false);
+      setEditingTaskIndex(null);
+      setNewTaskTitle('');
+    }
   };
 
   // Render each task item
@@ -54,19 +74,12 @@ const App = () => {
         { backgroundColor: item.status ? '#DFF2BF' : '#FFD2D2' },
       ]}
     >
-      <Switch
-        value={item.status}
-        onValueChange={() => toggleStatus(index)}
-      />
+      <Switch value={item.status} onValueChange={() => toggleStatus(index)} />
       <Text style={styles.taskTitle}>{item.title}</Text>
       <View style={styles.buttonsContainer}>
         <TouchableOpacity
           style={styles.editButton}
-          onPress={() => {
-            setEditingTask(index);
-            setNewTaskTitle(item.title);
-            setModalVisible(true);
-          }}
+          onPress={() => editTask(index)}
         >
           <Text style={styles.editButtonText}>Edit</Text>
         </TouchableOpacity>
